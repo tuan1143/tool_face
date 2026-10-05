@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const XLSX = require('xlsx');
 const { sql, getPool } = require('../config/db');
 const { parseBulkExcel } = require('./modules/excel-parser/excelService');
+const inboxRoutes = require('./modules/inbox/inbox.routes');
 const { addPostToQueue, removePostFromQueue } = require('../queues/post.queue');
 const { getFacebookPageAccessToken } = require('./utils/FacebookPageAccessToken');
 const {
@@ -51,6 +52,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '2mb' }));
 app.use('/api', loadSession);
+app.use('/api/inbox', inboxRoutes);
 
 const mediaDirectory = path.resolve(__dirname, '../uploads');
 fs.mkdirSync(mediaDirectory, { recursive: true });
@@ -142,7 +144,13 @@ app.get('/api/auth/facebook', (req, res) => {
   authorizationUrl.searchParams.set('client_id', process.env.FACEBOOK_APP_ID);
   authorizationUrl.searchParams.set('redirect_uri', facebookRedirectUri());
   authorizationUrl.searchParams.set('response_type', 'code');
-  authorizationUrl.searchParams.set('scope', process.env.FACEBOOK_LOGIN_SCOPES || 'public_profile,pages_show_list,pages_read_engagement,pages_manage_posts');
+  const requestedScopes = (process.env.FACEBOOK_LOGIN_SCOPES || 'public_profile,pages_show_list,pages_read_engagement,pages_manage_posts')
+    .split(',').map((scope) => scope.trim()).filter(Boolean);
+  for (const scope of ['pages_read_engagement', 'pages_read_user_content', 'pages_manage_engagement']) {
+    if (!requestedScopes.includes(scope)) requestedScopes.push(scope);
+  }
+  authorizationUrl.searchParams.set('scope', requestedScopes.join(','));
+  authorizationUrl.searchParams.set('auth_type', 'rerequest');
   authorizationUrl.searchParams.set('state', state);
   return res.redirect(302, authorizationUrl.toString());
 });

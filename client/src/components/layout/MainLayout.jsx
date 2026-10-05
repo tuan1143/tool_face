@@ -8,6 +8,7 @@ import {
   CalendarDays,
   ChevronDown,
   LayoutDashboard,
+  MessageCircle,
   MoreHorizontal,
   PenLine,
   Sparkles,
@@ -20,6 +21,7 @@ const navigation = [
   { label: 'Viết bài', href: '/post-planner/compose', icon: PenLine },
   { label: 'Lịch đăng', href: '/post-planner/calendar', icon: CalendarDays },
   { label: 'Báo cáo', href: '/post-planner/dashboard', icon: BarChart3 },
+  { label: 'Hộp thư', href: '/inbox', icon: MessageCircle },
   { label: 'Kênh', href: '/channels', icon: UsersRound },
   { label: 'Thêm', href: '/post-planner/bulk-upload', icon: MoreHorizontal }
 ];
